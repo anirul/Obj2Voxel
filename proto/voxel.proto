@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package voxel.proto;
+
+// Voxel file description.
+// Next: 7
+message VoxelFile {
+    // Name of the object in the voxel.
+    string name = 1;
+    // Number of point per meter.
+    float point_meter = 2;
+    // Number of point in x, y, z.
+    int32 size_x = 3;
+    int32 size_y = 4;
+    int32 size_z = 5;
+    // Voxel data this is the value for which you are from the object.
+    repeated float data = 6;
+}
