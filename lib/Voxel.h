@@ -24,10 +24,10 @@ namespace voxel {
 		{ 
 			return voxel_proto_; 
 		}
+		int LinearPos(const glm::vec3& pos) const;
 
 	protected:
 		glm::vec3 ToRealPos(const glm::vec3& pos) const;
-		int LinearPos(const glm::vec3& pos) const;
 		void LoadPoints(const voxel::Obj& obj);
 		void TraceFromBorder();
 		void TraceInside();
