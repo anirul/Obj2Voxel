@@ -30,7 +30,7 @@ namespace test {
 				voxel_file.begin_x(),
 				voxel_file.begin_y(),
 				voxel_file.begin_z());
-		float max_diag = glm::length(begin - end);
+		float max_diag = glm::length(end - begin);
 		std::for_each(
 			voxel_file.data().cbegin(), 
 			voxel_file.data().cend(), 

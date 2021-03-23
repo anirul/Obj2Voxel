@@ -6,11 +6,17 @@ namespace {
 		os << "glm::vec3(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
 		return os;
 	}
+
+	std::ostream& operator<<(std::ostream& os, const glm::ivec3& pos)
+	{
+		os << "glm::ivec3(" << pos.x << ", " << pos.y << ", " << pos.z << ")";
+		return os;
+	}
 }
 
 namespace voxel {
 
-	Voxel::Voxel(const voxel::Obj& obj, const glm::vec3& size)
+	Voxel::Voxel(const voxel::Obj& obj, const glm::ivec3& size)
 	{
 		LoadPoints(obj);
 		voxel_proto_.set_name(obj.GetName());
@@ -18,23 +24,30 @@ namespace voxel {
 		voxel_proto_.set_begin_x(min_.x - 10.0f);
 		voxel_proto_.set_begin_y(min_.y - 10.0f);
 		voxel_proto_.set_begin_z(min_.z - 10.0f);
+		begin_ = { min_.x - 10.0f, min_.y - 10.0f, min_.z - 10.0f };
 		voxel_proto_.set_end_x(max_.x + 10.0f);
 		voxel_proto_.set_end_y(max_.y + 10.0f);
 		voxel_proto_.set_end_z(max_.z + 10.0f);
-		voxel_proto_.set_size_x((int)size.x);
-		voxel_proto_.set_size_y((int)size.y);
-		voxel_proto_.set_size_z((int)size.z);
+		end_ = { max_.x + 10.0f, max_.y + 10.0f, max_.z + 10.0f };
+		assert(glm::all(glm::lessThan(begin_, end_)));
+		voxel_proto_.set_size_x(size.x);
+		voxel_proto_.set_size_y(size.y);
+		voxel_proto_.set_size_z(size.z);
 		// Setup the whole vector to 0.
-		std::size_t vec_size = (int)size.x * (int)size.y * (int)size.z;
+		std::size_t vec_size = 
+			static_cast<std::size_t>(
+				(std::int64_t)size.x * 
+				(std::int64_t)size.y * 
+				(std::int64_t)size.z);
 		std::cout << "size: " << vec_size << std::endl;
-		voxel_vec_.assign(vec_size, 0.0f);
+		voxel_vec_.assign(vec_size, std::numeric_limits<float>::max());
 		TraceFromBorder();
 		std::cout << "inner points: " << inner_points_.size() << std::endl;
 		TraceInside();
 		*voxel_proto_.mutable_data() = { voxel_vec_.begin(), voxel_vec_.end() };
 	}
 
-	glm::vec3 Voxel::ToRealPos(const glm::vec3& pos) const
+	glm::vec3 Voxel::ToRealPos(const glm::ivec3& pos) const
 	{
 		const float dx = 
 			(voxel_proto_.begin_x() - voxel_proto_.end_x()) / 
@@ -53,14 +66,11 @@ namespace voxel {
 			};
 	}
 
-	int Voxel::LinearPos(const glm::vec3& pos) const
+	int Voxel::LinearPos(const glm::ivec3& pos) const
 	{
-		return
-			static_cast<int>(
-				pos.x +
-				pos.y * (float)voxel_proto_.size_x() +
-				pos.z * (float)voxel_proto_.size_y() * 
-					(float)voxel_proto_.size_x());
+		return	pos.x +
+				pos.y * voxel_proto_.size_x() +
+				pos.z * voxel_proto_.size_y() * voxel_proto_.size_x();
 	}
 
 	void Voxel::LoadPoints(const voxel::Obj& obj)
@@ -102,7 +112,7 @@ namespace voxel {
 			{
 				std::cout << ".";
 				for (int z = 0; z < voxel_proto_.size_z(); ++z)
-					ComputePoint(x, y, z);
+					ComputePoint({ x, y, z });
 			}
 		}
 		// y
@@ -114,7 +124,7 @@ namespace voxel {
 			{
 				std::cout << ".";
 				for (int z = 0; z < voxel_proto_.size_z(); ++z)
-					ComputePoint(x, y, z);
+					ComputePoint({ x, y, z });
 			}
 		}
 		// z
@@ -126,7 +136,7 @@ namespace voxel {
 				for (int z = 0;
 					z < voxel_proto_.size_z();
 					z += voxel_proto_.size_z() - 1)
-					ComputePoint(x, y, z);
+					ComputePoint({ x, y, z });
 			}
 		}
 		std::cout << "\n";
@@ -139,7 +149,7 @@ namespace voxel {
 			std::cout << ".";
 			for (int y = 1; y < voxel_proto_.size_y() - 1; ++y)
 				for (int z = 1; z < voxel_proto_.size_z() - 1; ++z)
-					ComputeInnerPoint(x, y, z);
+					ComputeInnerPoint({ x, y, z });
 		}
 		std::cout << "\n";
 	}
@@ -148,10 +158,8 @@ namespace voxel {
 	{
 		float min = std::numeric_limits<float>::max();
 		glm::vec3 point;
-		#pragma omp parallel for
-		for (int i = 0; i < points_.size(); ++i)
+		for (const auto p : points_)
 		{
-			const auto& p = points_[i];
 			float l = glm::length(p - vec);
 			min = std::min(min, l);
 			if (min == l)
@@ -165,33 +173,31 @@ namespace voxel {
 	float Voxel::GetMinInnerDistance(const glm::vec3& vec)
 	{
 		float min = std::numeric_limits<float>::max();
-		#pragma omp parallel for
-		for (int i = 0; i < inner_points_.size(); ++i)
+		for (const glm::vec3& v3 : inner_points_)
 		{
-			const auto& p = inner_points_[i];
-			float l = glm::length(p - vec);
+			float l = glm::length(v3 - vec);
 			min = std::min(min, l);
 		}
 		return min;
 	}
 
-	void Voxel::ComputePoint(int x, int y, int z)
+	void Voxel::ComputePoint(const glm::ivec3& pos)
 	{
-		glm::vec3 pos = { x, y, z };
 		int linear = LinearPos(pos);
 		glm::vec3 real_pos = ToRealPos(pos);
 		auto f_vec = GetMinDistance(real_pos);
-		voxel_vec_[linear] = f_vec.first;
+		voxel_vec_[linear] = std::min(f_vec.first, voxel_vec_[linear]);
 		inner_points_.push_back(f_vec.second);
 	}
 
-	void Voxel::ComputeInnerPoint(int x, int y, int z)
+	void Voxel::ComputeInnerPoint(const glm::ivec3& pos)
 	{
-		glm::vec3 pos = { x, y, z };
 		int linear = LinearPos(pos);
 		glm::vec3 real_pos = ToRealPos(pos);
+		assert(glm::all(glm::greaterThan(real_pos, begin_)));
+		assert(glm::all(glm::lessThan(real_pos, end_)));
 		auto f = GetMinInnerDistance(real_pos);
-		voxel_vec_[linear] = f;
+		voxel_vec_[linear] = std::min(f, voxel_vec_[linear]);
 	}
 
 } // End namespace voxel.
