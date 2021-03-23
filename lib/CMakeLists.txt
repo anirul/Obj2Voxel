@@ -1,5 +1,7 @@
 add_library(VoxelLib
   STATIC
+	FileSystem.cpp
+	FileSystem.h
     Obj.cpp
     Obj.h
 	Voxel.cpp
@@ -14,6 +16,7 @@ target_include_directories(VoxelLib
 
 target_link_libraries(VoxelLib
   PUBLIC
+	fmt::fmt
     glm
 	tinyobjloader::tinyobjloader
 )
