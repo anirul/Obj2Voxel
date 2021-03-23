@@ -3,16 +3,29 @@ syntax = "proto3";
 package voxel.proto;
 
 // Voxel file description.
-// Next: 7
+// Next: 15
 message VoxelFile {
     // Name of the object in the voxel.
     string name = 1;
     // Number of point per meter.
-    float point_meter = 2;
+    float point_meter_x = 2;
+    float point_meter_y = 7;
+    float point_meter_z = 8;
+    // Start of the array in the mesh.
+    float begin_x = 9;
+    float begin_y = 10;
+    float begin_z = 11;
+    // End of the array in the mesh.
+    float end_x = 12;
+    float end_y = 13;
+    float end_z = 14;
     // Number of point in x, y, z.
     int32 size_x = 3;
     int32 size_y = 4;
     int32 size_z = 5;
     // Voxel data this is the value for which you are from the object.
+    // This value are in [cm], and the array is suppose to be size_x * size_y *
+    // size_z  in size (this mean that the maximum size for any of these is
+    // ~512).
     repeated float data = 6;
 }

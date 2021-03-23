@@ -2,6 +2,8 @@ add_library(VoxelLib
   STATIC
     Obj.cpp
     Obj.h
+	Voxel.cpp
+	Voxel.h
 )
 
 target_include_directories(VoxelLib

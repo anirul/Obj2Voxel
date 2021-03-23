@@ -1,67 +1,40 @@
 #include <algorithm>
+#include <filesystem>
 #include <iostream>
 #include <cassert>
 #include <limits>
 #include <set>
-#include "../lib/Obj.h"
+#include "lib/Obj.h"
+#include "lib/Voxel.h"
+#include "proto/proto.h"
 
-std::ostream& operator<<(std::ostream& os, const glm::vec3& vec)
+bool IsFileExist(const std::string& file)
 {
-    os << "glm::vec3(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
-    return os;
+	return std::filesystem::is_regular_file(file);
 }
 
-const std::vector<glm::vec3> GetPointFromObj(
-    const std::string& path, 
-    const std::string& file)
+bool IsDirectoryExist(const std::string& file)
 {
-    voxel::Obj obj(path, file);
-    const auto& meshes = obj.GetMeshes();
-    std::cout << "Found #" << meshes.size() << " meshes.\n";
-    std::int64_t total_vertices = 0;
-    bool initialized = false;
-    glm::vec3 min;
-    glm::vec3 max;
-    std::vector<glm::vec3> points;
-    for (const auto& mesh : meshes)
-    {
-        const auto& vertices = mesh.GetVertices();
-        std::cout << "\tmesh has #" << vertices.size() << " vertices.\n";
-        total_vertices += vertices.size();
-        if (!initialized)
-        {
-            min = vertices[0].point;
-            max = vertices[0].point;
-            initialized = true;
-        }
-        for (const auto& element : vertices)
-        {
-            glm::vec3 temp = element.point;
-            min = glm::min(min, temp);
-            max = glm::max(max, temp);
-            points.push_back(temp);
-        }
-    }
-    std::cout << "Box: " << glm::abs(max - min) << "\n";
-    return points;
+	return std::filesystem::is_directory(file);
 }
 
-std::pair<float, glm::vec3> GetMinDistance(
-    const glm::vec3& vec, 
-    const std::vector<glm::vec3>& points) 
+const std::string FindPath(const std::string& file)
 {
-    float min = std::numeric_limits<float>::max();
-    glm::vec3 point;
-    for (const auto& p : points)
-    {
-        float l = glm::length(p - vec);
-        min = std::min(min, l);
-        if (min == l)
-        {
-            point = p;
-        }
-    }
-    return { min, point };
+	// This is a bad hack as this won't prevent people from adding Asset
+	// high in the path of the game.
+	for (auto i : { 0, 4, 3, 2, 1 })
+	{
+		std::string f;
+		for (auto j = 0; j < i; ++j)
+			f += "../";
+		f += file;
+		if (IsDirectoryExist(f))
+		{
+			std::filesystem::path p(f);
+			return std::filesystem::absolute(p).string();
+		}
+	}
+	return "";
 }
 
 int main(int ac, char** av)
@@ -69,8 +42,9 @@ int main(int ac, char** av)
     try 
     {
         assert(ac == 3);
-        const auto points = GetPointFromObj(av[1], av[2]);
-        std::cout << "Total: #" << points.size() << "\n";
+		voxel::Obj obj(FindPath(av[1]), av[2]);
+		voxel::Voxel vox(obj, { 16.f, 16.f, 16.f });
+		SaveProtoToJsonFile(vox.GetVoxelFile(), "./test.json");
     } 
     catch(std::exception& ex) 
     {

@@ -49,8 +49,10 @@ namespace voxel {
 		{ 
 			return materials_; 
 		}
+		const std::string& GetName() const { return name_; }
 	
 	protected:
+		std::string name_;
 		std::vector<ObjMesh> meshes_;
 		std::vector<ObjMaterial> materials_;
 	};

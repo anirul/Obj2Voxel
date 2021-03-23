@@ -9,6 +9,7 @@ namespace voxel {
 
 	Obj::Obj(const std::string& file_path, const std::string& file_name)
 	{
+		name_ = file_name;
 		tinyobj::ObjReaderConfig reader_config;
 		reader_config.mtl_search_path = file_path;
 		tinyobj::ObjReader reader;
@@ -65,10 +66,13 @@ namespace voxel {
 					vertex.normal.x = attrib.normals[3 * idx.normal_index + 0];
 					vertex.normal.y = attrib.normals[3 * idx.normal_index + 1];
 					vertex.normal.z = attrib.normals[3 * idx.normal_index + 2];
-					vertex.tex_coord.x = 
-						attrib.texcoords[2 * idx.texcoord_index + 0];
-					vertex.tex_coord.y = 
-						attrib.texcoords[2 * idx.texcoord_index + 1];
+					if (idx.texcoord_index != -1)
+					{
+						vertex.tex_coord.x = 
+							attrib.texcoords[2 * idx.texcoord_index + 0];
+						vertex.tex_coord.y = 
+							attrib.texcoords[2 * idx.texcoord_index + 1];
+					}
 					points.push_back(vertex);
 				}
 				index_offset += fv;
