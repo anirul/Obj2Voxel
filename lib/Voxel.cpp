@@ -50,13 +50,13 @@ namespace voxel {
 	glm::vec3 Voxel::ToRealPos(const glm::ivec3& pos) const
 	{
 		const float dx = 
-			(voxel_proto_.begin_x() - voxel_proto_.end_x()) / 
+			fabs(voxel_proto_.begin_x() - voxel_proto_.end_x()) / 
 			(voxel_proto_.size_x() - 1);
 		const float dy = 
-			(voxel_proto_.begin_y() - voxel_proto_.end_y()) /
+			fabs(voxel_proto_.begin_y() - voxel_proto_.end_y()) /
 			(voxel_proto_.size_y() - 1);
 		const float dz = 
-			(voxel_proto_.begin_z() - voxel_proto_.end_z()) /
+			fabs(voxel_proto_.begin_z() - voxel_proto_.end_z()) /
 			(voxel_proto_.size_z() - 1);
 		return
 			{
@@ -194,7 +194,7 @@ namespace voxel {
 	{
 		int linear = LinearPos(pos);
 		glm::vec3 real_pos = ToRealPos(pos);
-		assert(glm::all(glm::greaterThan(real_pos, begin_)));
+		assert(glm::all(glm::greaterThanEqual(real_pos, begin_)));
 		assert(glm::all(glm::lessThan(real_pos, end_)));
 		auto f = GetMinInnerDistance(real_pos);
 		voxel_vec_[linear] = std::min(f, voxel_vec_[linear]);

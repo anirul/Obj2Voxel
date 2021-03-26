@@ -20,7 +20,7 @@ namespace test {
 			glm::vec3{ 8.f, 8.f, 8.f });
 		ASSERT_TRUE(voxel_ptr_);
 		voxel::proto::VoxelFile voxel_file = voxel_ptr_->GetVoxelFile();
-		// SaveProtoToJsonFile(voxel_file, "./Apple.json");
+		SaveProtoToJsonFile(voxel_file, "./Apple.json");
 		// Compute the max length of a diagonal.
 		glm::vec3 end =	glm::vec3(
 				voxel_file.end_x(),
