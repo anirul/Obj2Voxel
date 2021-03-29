@@ -1,4 +1,5 @@
 #include "Voxel.h"
+#include <array>
 
 namespace {
 
@@ -47,6 +48,31 @@ namespace voxel {
 		std::cout << "inner points: " << inner_points_.size() << std::endl;
 		TraceInside();
 		*voxel_proto_.mutable_data() = { voxel_vec_.begin(), voxel_vec_.end() };
+	}
+
+	glm::ivec3 Voxel::GetClosestSide(const glm::ivec3& pos) const
+	{
+		// Store distance to all border, { x, -x, y, -y, z, -z }.
+		std::array<float, 6> distance;
+		std::array<glm::ivec3, 6> min_pos = { pos, pos, pos, pos, pos, pos };
+		min_pos[0].x = 0;
+		min_pos[1].x = voxel_proto_.size_x() - 1;
+		min_pos[2].y = 0;
+		min_pos[3].y = voxel_proto_.size_y() - 1;
+		min_pos[4].z = 0;
+		min_pos[5].z = voxel_proto_.size_z() - 1;
+		float min_distance = std::numeric_limits<float>::max();
+		int min_index = 0;
+		for (int i = 0; i < 6; ++i)
+		{
+			distance.at(i) = glm::length(glm::vec3(min_pos.at(i) - pos));
+			if (min_distance > distance.at(i))
+			{
+				min_distance = distance.at(i);
+				min_index = i;
+			}
+		}
+		return min_pos.at(min_index);
 	}
 
 	glm::vec3 Voxel::ToRealPos(const glm::ivec3& pos) const
@@ -175,14 +201,22 @@ namespace voxel {
 		return { min, point };
 	}
 
-	float Voxel::GetMinInnerDistance(const glm::vec3& vec)
+	float Voxel::GetMinInnerDistance(
+		const glm::vec3& real_pos, 
+		const glm::ivec3& pos)
 	{
 		float min = std::numeric_limits<float>::max();
+		const auto closest_pos = ToRealPos(GetClosestSide(pos));
+		const float closest_dist = glm::length(closest_pos - real_pos);
 		for (const glm::vec3& v3 : inner_points_)
 		{
-			float l = glm::length(v3 - vec);
-			
-			min = std::min(min, l);
+			float l = glm::length(v3 - real_pos);
+			if (fabs(min) > l) {
+				float v3_dist = glm::length(v3 - closest_pos);
+				if (v3_dist < closest_dist)
+					l = -l;
+				min = l;
+			}
 		}
 		return min;
 	}
@@ -202,7 +236,7 @@ namespace voxel {
 		glm::vec3 real_pos = ToRealPos(pos);
 		assert(glm::all(glm::greaterThanEqual(real_pos, begin_)));
 		assert(glm::all(glm::lessThan(real_pos, end_)));
-		auto f = GetMinInnerDistance(real_pos);
+		auto f = GetMinInnerDistance(real_pos, pos);
 		voxel_vec_[linear_pos] = std::min(f, voxel_vec_[linear_pos]);
 	}
 

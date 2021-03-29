@@ -32,12 +32,13 @@ namespace voxel {
 		int LinearPos(const glm::ivec3& pos) const;
 
 	protected:
+		glm::ivec3 GetClosestSide(const glm::ivec3& pos) const;
 		glm::vec3 ToRealPos(const glm::ivec3& pos) const;
 		void LoadPoints(const voxel::Obj& obj);
 		void TraceFromBorder();
 		void TraceInside();
 		std::pair<float, glm::vec3> GetMinDistance(const glm::vec3& vec);
-		float GetMinInnerDistance(const glm::vec3& vec);
+		float GetMinInnerDistance(const glm::vec3& vec, const glm::ivec3& pos);
 		void ComputePoint(const glm::ivec3& pos);
 		void ComputeInnerPoint(const glm::ivec3& pos);
 
