@@ -19,7 +19,7 @@ namespace {
 
 namespace voxel {
 
-	Voxel::Voxel(const voxel::Obj& obj, const glm::ivec3& size)
+	Voxel::Voxel(const Obj& obj, const glm::ivec3& size)
 	{
 		LoadPoints(obj);
 		voxel_proto_.set_name(obj.GetName());

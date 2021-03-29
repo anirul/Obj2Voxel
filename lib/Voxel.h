@@ -17,15 +17,15 @@ namespace {
 		}
 	};
 
-}
+} // End namespace.
 
 namespace voxel {
 
 	class Voxel 
 	{
 	public:
-		Voxel(const voxel::Obj& obj, const glm::ivec3& size);
-		const voxel::proto::VoxelFile& GetVoxelFile() const
+		Voxel(const Obj& obj, const glm::ivec3& size);
+		const proto::VoxelFile& GetVoxelFile() const
 		{ 
 			return voxel_proto_; 
 		}
@@ -43,7 +43,7 @@ namespace voxel {
 		void ComputeInnerPoint(const glm::ivec3& pos);
 
 	private:
-		voxel::proto::VoxelFile voxel_proto_ = {};
+		proto::VoxelFile voxel_proto_ = {};
 		glm::vec3 min_;
 		glm::vec3 max_;
 		glm::vec3 begin_;
