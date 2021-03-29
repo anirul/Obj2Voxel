@@ -1,6 +1,7 @@
 #include "Voxel.h"
 
 namespace {
+
 	std::ostream& operator<<(std::ostream& os, const glm::vec3& vec)
 	{
 		os << "glm::vec3(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
@@ -12,6 +13,7 @@ namespace {
 		os << "glm::ivec3(" << pos.x << ", " << pos.y << ", " << pos.z << ")";
 		return os;
 	}
+
 }
 
 namespace voxel {
@@ -49,6 +51,9 @@ namespace voxel {
 
 	glm::vec3 Voxel::ToRealPos(const glm::ivec3& pos) const
 	{
+		assert(voxel_proto_.size_x());
+		assert(voxel_proto_.size_y());
+		assert(voxel_proto_.size_z());
 		const float dx = 
 			fabs(voxel_proto_.begin_x() - voxel_proto_.end_x()) / 
 			(voxel_proto_.size_x() - 1);
@@ -104,36 +109,36 @@ namespace voxel {
 	void Voxel::TraceFromBorder()
 	{
 		// x
-		for (int x = 0; 
+		for (std::uint32_t x = 0; 
 			x < voxel_proto_.size_x(); 
 			x += voxel_proto_.size_x() - 1)
 		{
-			for (int y = 0; y < voxel_proto_.size_y(); ++y)
+			for (std::uint32_t y = 0; y < voxel_proto_.size_y(); ++y)
 			{
 				std::cout << ".";
-				for (int z = 0; z < voxel_proto_.size_z(); ++z)
+				for (std::uint32_t z = 0; z < voxel_proto_.size_z(); ++z)
 					ComputePoint({ x, y, z });
 			}
 		}
 		// y
-		for (int x = 0; x < voxel_proto_.size_z(); ++x)
+		for (std::uint32_t x = 0; x < voxel_proto_.size_z(); ++x)
 		{
-			for (int y = 0; 
+			for (std::uint32_t y = 0;
 				y < voxel_proto_.size_y(); 
 				y += voxel_proto_.size_y() - 1)
 			{
 				std::cout << ".";
-				for (int z = 0; z < voxel_proto_.size_z(); ++z)
+				for (std::uint32_t z = 0; z < voxel_proto_.size_z(); ++z)
 					ComputePoint({ x, y, z });
 			}
 		}
 		// z
-		for (int x = 0; x < voxel_proto_.size_z(); ++x)
+		for (std::uint32_t x = 0; x < voxel_proto_.size_z(); ++x)
 		{
 			std::cout << ".";
-			for (int y = 0; y < voxel_proto_.size_y(); ++y)
+			for (std::uint32_t y = 0; y < voxel_proto_.size_y(); ++y)
 			{
-				for (int z = 0;
+				for (std::uint32_t z = 0;
 					z < voxel_proto_.size_z();
 					z += voxel_proto_.size_z() - 1)
 					ComputePoint({ x, y, z });
@@ -144,11 +149,11 @@ namespace voxel {
 
 	void Voxel::TraceInside()
 	{
-		for (int x = 1; x < voxel_proto_.size_x() - 1; ++x)
+		for (std::uint32_t x = 1; x < voxel_proto_.size_x() - 1; ++x)
 		{
 			std::cout << ".";
-			for (int y = 1; y < voxel_proto_.size_y() - 1; ++y)
-				for (int z = 1; z < voxel_proto_.size_z() - 1; ++z)
+			for (std::uint32_t y = 1; y < voxel_proto_.size_y() - 1; ++y)
+				for (std::uint32_t z = 1; z < voxel_proto_.size_z() - 1; ++z)
 					ComputeInnerPoint({ x, y, z });
 		}
 		std::cout << "\n";
@@ -176,6 +181,7 @@ namespace voxel {
 		for (const glm::vec3& v3 : inner_points_)
 		{
 			float l = glm::length(v3 - vec);
+			
 			min = std::min(min, l);
 		}
 		return min;
@@ -187,17 +193,17 @@ namespace voxel {
 		glm::vec3 real_pos = ToRealPos(pos);
 		auto f_vec = GetMinDistance(real_pos);
 		voxel_vec_[linear] = std::min(f_vec.first, voxel_vec_[linear]);
-		inner_points_.push_back(f_vec.second);
+		inner_points_.insert(f_vec.second);
 	}
 
 	void Voxel::ComputeInnerPoint(const glm::ivec3& pos)
 	{
-		int linear = LinearPos(pos);
+		int linear_pos = LinearPos(pos);
 		glm::vec3 real_pos = ToRealPos(pos);
 		assert(glm::all(glm::greaterThanEqual(real_pos, begin_)));
 		assert(glm::all(glm::lessThan(real_pos, end_)));
 		auto f = GetMinInnerDistance(real_pos);
-		voxel_vec_[linear] = std::min(f, voxel_vec_[linear]);
+		voxel_vec_[linear_pos] = std::min(f, voxel_vec_[linear_pos]);
 	}
 
 } // End namespace voxel.

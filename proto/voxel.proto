@@ -20,9 +20,9 @@ message VoxelFile {
     float end_y = 13;
     float end_z = 14;
     // Number of point in x, y, z.
-    int32 size_x = 3;
-    int32 size_y = 4;
-    int32 size_z = 5;
+    uint32 size_x = 3;
+    uint32 size_y = 4;
+    uint32 size_z = 5;
     // Voxel data this is the value for which you are from the object.
     // This value are in [cm], and the array is suppose to be size_x * size_y *
     // size_z  in size (this mean that the maximum size for any of these is

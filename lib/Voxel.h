@@ -4,6 +4,21 @@
 #include "lib/Obj.h"
 #include "proto/proto.h"
 
+namespace {
+
+	struct CompareGlmVec
+	{
+		bool operator()(const glm::vec3& l, const glm::vec3& r) const
+		{
+			// Use tuple because they have a correct < operator.
+			std::tuple lt(l.x, l.y, l.z);
+			std::tuple rt(r.x, r.y, r.z);
+			return lt < rt;
+		}
+	};
+
+}
+
 namespace voxel {
 
 	class Voxel 
@@ -33,7 +48,7 @@ namespace voxel {
 		glm::vec3 begin_;
 		glm::vec3 end_;
 		std::vector<glm::vec3> points_;
-		std::vector<glm::vec3> inner_points_;
+		std::set<glm::vec3, CompareGlmVec> inner_points_;
 		std::vector<float> voxel_vec_;
 	};
 
