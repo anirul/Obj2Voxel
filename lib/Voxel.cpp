@@ -107,13 +107,17 @@ namespace voxel {
 	void Voxel::LoadPoints(const voxel::Obj& obj)
 	{
 		const auto& meshes = obj.GetMeshes();
-		std::cout << "Found #" << meshes.size() << " meshes.\n";
+		std::cout 
+			<< "Found #" << meshes.size() 
+			<< " meshes." << std::endl;
 		std::int64_t total_vertices = 0;
 		bool initialized = false;
 		for (const auto& mesh : meshes)
 		{
 			const auto& vertices = mesh.GetVertices();
-			std::cout << "\tmesh has #" << vertices.size() << " vertices.\n";
+			std::cout 
+				<< "\tmesh has #" << vertices.size() 
+				<< " vertices." << std::endl;
 			total_vertices += vertices.size();
 			if (!initialized)
 			{
@@ -129,7 +133,7 @@ namespace voxel {
 				points_.push_back(temp);
 			}
 		}
-		std::cout << "Box: " << glm::abs(max_ - min_) << "\n";
+		std::cout << "Box: " << glm::abs(max_ - min_) << std::endl;
 	}
 
 	void Voxel::TraceFromBorder()
@@ -142,6 +146,7 @@ namespace voxel {
 			for (std::uint32_t y = 0; y < voxel_proto_.size_y(); ++y)
 			{
 				std::cout << ".";
+				std::cout.flush();
 				for (std::uint32_t z = 0; z < voxel_proto_.size_z(); ++z)
 					ComputePoint({ x, y, z });
 			}
@@ -154,6 +159,7 @@ namespace voxel {
 				y += voxel_proto_.size_y() - 1)
 			{
 				std::cout << ".";
+				std::cout.flush();
 				for (std::uint32_t z = 0; z < voxel_proto_.size_z(); ++z)
 					ComputePoint({ x, y, z });
 			}
@@ -162,6 +168,7 @@ namespace voxel {
 		for (std::uint32_t x = 0; x < voxel_proto_.size_z(); ++x)
 		{
 			std::cout << ".";
+			std::cout.flush();
 			for (std::uint32_t y = 0; y < voxel_proto_.size_y(); ++y)
 			{
 				for (std::uint32_t z = 0;
@@ -170,7 +177,7 @@ namespace voxel {
 					ComputePoint({ x, y, z });
 			}
 		}
-		std::cout << "\n";
+		std::cout << std::endl;
 	}
 
 	void Voxel::TraceInside()
@@ -178,11 +185,12 @@ namespace voxel {
 		for (std::uint32_t x = 1; x < voxel_proto_.size_x() - 1; ++x)
 		{
 			std::cout << ".";
+			std::cout.flush();
 			for (std::uint32_t y = 1; y < voxel_proto_.size_y() - 1; ++y)
 				for (std::uint32_t z = 1; z < voxel_proto_.size_z() - 1; ++z)
 					ComputeInnerPoint({ x, y, z });
 		}
-		std::cout << "\n";
+		std::cout << std::endl;
 	}
 
 	std::pair<float, glm::vec3> Voxel::GetMinDistance(const glm::vec3& vec)

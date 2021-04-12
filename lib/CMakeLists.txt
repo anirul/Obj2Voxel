@@ -2,7 +2,9 @@ add_library(VoxelLib
   STATIC
 	FileSystem.cpp
 	FileSystem.h
-    Obj.cpp
+    Nrrd.cpp
+	Nrrd.h
+	Obj.cpp
     Obj.h
 	Voxel.cpp
 	Voxel.h
